@@ -12,7 +12,14 @@
     "syncmode": true,
     "meshes": {
       "A": {
-        "0.1": "$PYRBF_MESHES/out-0.1.vtk"
+        "0.1": "$PYRBF_MESHES/out-0.1.vtk",
+        "0.05": "$PYRBF_MESHES/out-0.05.vtk",
+        "0.04": "$PYRBF_MESHES/out-0.04.vtk",
+        "0.03": "$PYRBF_MESHES/out-0.03.vtk",
+        "0.02": "$PYRBF_MESHES/out-0.02.vtk",
+        "0.015": "$PYRBF_MESHES/out-0.015.vtk",
+        "0.013": "$PYRBF_MESHES/out-0.013.vtk",
+        "0.01": "$PYRBF_MESHES/out-0.01.vtk"
       },
       "B": {
         "0.012": "$PYRBF_MESHES/out-0.012.vtk"
@@ -26,15 +33,26 @@
           "consistent"
         ],
         "cases": {
-          "tps": {
+          "tps-eigen": {
             "kind": "rbf-thin-plate-splines",
             "options": "use-qr-decomposition=\"1\""
+          },
+          "tps-petsc": {
+            "kind": "rbf-thin-plate-splines",
+            "options": "use-qr-decomposition=\"0\""
           }
         }
       },
       "meshes": {
         "A": [
-          "0.1"
+          "0.1",
+          "0.05",
+          "0.04",
+          "0.03",
+          "0.02",
+          "0.015",
+          "0.013",
+          "0.01"
         ],
         "B": [
           "0.012"
