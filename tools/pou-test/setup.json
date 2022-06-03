@@ -54,10 +54,6 @@
           "pou-c6-O0.5-M120": {
             "kind": "rbf-pou",
             "options": "relative-overlap=\"0.5\" support-radius=\"1\" vertices-per-partition=\"120\""
-          },
-          "rbf-c6": {
-            "kind": "rbf-compact-polynomial-c6",
-            "options": "support-radius=\"1\" use-qr-decomposition=\"true\""
           }
         }
       },
@@ -69,6 +65,35 @@
           "0.03",
           "0.02",
           "0.01"
+        ],
+        "B": [
+          "0.012"
+        ]
+      }
+    },
+    {
+      "mapping": {
+        "constraints": [
+          "consistent"
+        ],
+        "cases": {
+          "petrbf-c6": {
+            "kind": "rbf-compact-polynomial-c6",
+            "options": "support-radius=\"1.\" use-qr-decomposition=\"false\""
+          },
+          "rbf-c6": {
+            "kind": "rbf-compact-polynomial-c6",
+            "options": "support-radius=\"1.\" use-qr-decomposition=\"true\""
+          }
+        }
+      },
+      "meshes": {
+        "A": [
+          "0.1",
+          "0.05",
+          "0.04",
+          "0.03",
+          "0.02"
         ],
         "B": [
           "0.012"
