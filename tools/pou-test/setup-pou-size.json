@@ -31,29 +31,33 @@
           "consistent"
         ],
         "cases": {
-          "tps-eigen": {
-            "kind": "rbf-thin-plate-splines",
-            "options": "use-qr-decomposition=\"1\""
-          },
-          "tps-petsc": {
-            "kind": "rbf-thin-plate-splines",
-            "options": "use-qr-decomposition=\"0\""
-          },
-          "pou-c0": {
+          "pou-c6-O0.5-M10": {
             "kind": "rbf-pou",
-            "options": "relative-overlap=\"0.5\" vertices-per-partition=\"50\""
+            "options": "relative-overlap=\"0.5\" support-radius=\"1\" vertices-per-partition=\"10\""
           },
-          "pou-c6": {
+          "pou-c6-O0.5-M20": {
             "kind": "rbf-pou",
-            "options": "relative-overlap=\"0.5\" vertices-per-partition=\"50\""
+            "options": "relative-overlap=\"0.5\" support-radius=\"1\" vertices-per-partition=\"20\""
           },
-          "pou-ctps-c2": {
+          "pou-c6-O0.5-M50": {
             "kind": "rbf-pou",
-            "options": "relative-overlap=\"0.5\" vertices-per-partition=\"50\""
+            "options": "relative-overlap=\"0.5\" support-radius=\"1\" vertices-per-partition=\"50\""
           },
-          "pou-Gauss": {
+          "pou-c6-O0.5-M80": {
             "kind": "rbf-pou",
-            "options": "relative-overlap=\"0.5\" vertices-per-partition=\"50\""
+            "options": "relative-overlap=\"0.5\" support-radius=\"1\" vertices-per-partition=\"80\""
+          },
+          "pou-c6-O0.5-M100": {
+            "kind": "rbf-pou",
+            "options": "relative-overlap=\"0.5\" support-radius=\"1\" vertices-per-partition=\"100\""
+          },
+          "pou-c6-O0.5-M120": {
+            "kind": "rbf-pou",
+            "options": "relative-overlap=\"0.5\" support-radius=\"1\" vertices-per-partition=\"120\""
+          },
+          "rbf-c6": {
+            "kind": "rbf-compact-polynomial-c6",
+            "options": "support-radius=\"1\" use-qr-decomposition=\"true\""
           }
         }
       },
