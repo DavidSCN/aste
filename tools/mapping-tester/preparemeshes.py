@@ -40,7 +40,7 @@ def prepareMainMesh(meshdir, name, file, function, force=False):
     data_name = "{}".format(function)
     [pathName, tmpfilename] = os.path.split(os.path.normpath(mainMesh))
     subprocess.run(["vtk_calculator.py", "--mesh", os.path.expandvars(file), "--function",
-                    function, "--data", data_name, "--directory", pathName, "-o", tmpfilename])
+                    function, "--data", data_name,"--gradient", "--directory", pathName, "-o", tmpfilename])
 
 
 def preparePartMesh(meshdir, name, p, force=False):
