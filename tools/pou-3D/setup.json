@@ -10,6 +10,7 @@
       ]
     },
     "syncmode": true,
+    "network": "eno1",
     "meshes": {
       "A": {
         "0.1": "$UNIT_CUBE_MESHES/out-0.1.vtk",
