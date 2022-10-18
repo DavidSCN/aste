@@ -1,0 +1,74 @@
+{
+  "general": {
+    "function": "rosenbrock3d",
+    "ranks": {
+      "A": [
+        1
+      ],
+      "B": [
+        1
+      ]
+    },
+    "syncmode": true,
+    "meshes": {
+      "A": {
+        "0.1": "$UNIT_CUBE_MESHES/out-0.1.vtk",
+        "0.05": "$UNIT_CUBE_MESHES/out-0.05.vtk",
+        "0.04": "$UNIT_CUBE_MESHES/out-0.04.vtk",
+        "0.03": "$UNIT_CUBE_MESHES/out-0.03.vtk",
+        "0.02": "$UNIT_CUBE_MESHES/out-0.02.vtk",
+        "0.015": "$UNIT_CUBE_MESHES/out-0.015.vtk"
+      },
+      "B": {
+        "0.01": "$UNIT_CUBE_MESHES/out-0.01.vtk"
+      }
+    }
+  },
+  "groups": [
+    {
+      "mapping": {
+        "constraints": [
+          "consistent"
+        ],
+        "cases": {
+          "pou-c6-O0.3-M20": {
+            "kind": "rbf-pou",
+            "options": "relative-overlap=\"0.3\" support-radius=\"0.5\" vertices-per-partition=\"20\" project-to-input=\"false\""
+          },
+          "pou-c6-O0.3-M50": {
+            "kind": "rbf-pou",
+            "options": "relative-overlap=\"0.3\" support-radius=\"0.5\" vertices-per-partition=\"50\" project-to-input=\"false\""
+          },
+          "pou-c6-O0.3-M80": {
+            "kind": "rbf-pou",
+            "options": "relative-overlap=\"0.3\" support-radius=\"0.5\" vertices-per-partition=\"80\" project-to-input=\"false\""
+          },
+          "pou-c6-O0.3-M120": {
+            "kind": "rbf-pou",
+            "options": "relative-overlap=\"0.3\" support-radius=\"0.5\" vertices-per-partition=\"120\" project-to-input=\"false\""
+          },
+          "pou-c6-O0.3-M200": {
+            "kind": "rbf-pou",
+            "options": "relative-overlap=\"0.3\" support-radius=\"0.5\" vertices-per-partition=\"200\" project-to-input=\"false\""
+          },
+          "nn": {
+            "kind": "nearest-neighbor"
+          }
+        }
+      },
+      "meshes": {
+        "A": [
+          "0.1",
+          "0.05",
+          "0.04",
+          "0.03",
+          "0.02",
+          "0.015"
+        ],
+        "B": [
+          "0.01"
+        ]
+      }
+    }
+ ]
+}
