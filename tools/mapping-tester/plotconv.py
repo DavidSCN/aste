@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import argparse
+import copy
 import math
 
 import matplotlib.pyplot as plt
@@ -166,6 +167,48 @@ def plotComputeMappingTime(df, prefix):
     plt.gca().invert_xaxis()
     plt.grid()
     plt.savefig(prefix + "-computet.pdf")
+
+
+def plotSpeedupComputeMappingTime(df, prefix):
+    yname = "computeMappingTime"
+    fig, ax = plt.subplots(sharex=True, sharey=True)
+    series = df.groupby("mapping")
+
+    flag = True
+    for grouped, style in zip(series, styles):
+        name, group = grouped
+
+        # Store the first (reference) run
+        if flag:
+            firstGroup = copy.deepcopy(group)
+            flag = False
+
+        # Scale down all remaining runs by the reference.
+        # Looks a bit complicated here, but the groupby data leads to different indices which cannot simply be multiplied
+        for gindex, findex in zip(group.iterrows(), firstGroup.iterrows()):
+            gind, grow = gindex
+            find, frow = findex
+            group.at[gind, yname] = frow[yname] / grow[yname]
+
+        if group[yname].max() == 0:
+            print(f"Dropping {yname}-series {name} as all 0")
+            continue
+        color, marker = style
+        group.plot(
+            ax=ax,
+            loglog=False,
+            x="mesh A",
+            y=yname,
+            label=name,
+            marker=marker,
+            color=color,
+        )
+    ax.set_xlabel("edge length(h) of mesh A")
+    ax.set_ylabel("speedup")
+
+    plt.gca().invert_xaxis()
+    plt.grid()
+    plt.savefig(prefix + "-speedup-computet.pdf")
 
 
 def plotMapDataTime(df, prefix):
