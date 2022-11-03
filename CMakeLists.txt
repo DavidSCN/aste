@@ -53,6 +53,8 @@ endif()
 
 find_package(MPI REQUIRED)
 
+option(ASTE_USE_ASTE_JOINER_CPP "Use C++ implementation of precice-aste-join" ON)
+
 add_executable(precice-aste-run src/precice-aste-run.cpp src/common.cpp src/mesh.cpp src/configreader.cpp src/modes.cpp src/utilities.cpp src/logger.cpp)
 target_include_directories(precice-aste-run PRIVATE src thirdparty)
 target_link_libraries(precice-aste-run
@@ -77,6 +79,14 @@ if(METIS_FOUND)
   target_link_libraries(precice-aste-run metisAPI)
 endif()
 
+if(ASTE_USE_ASTE_JOINER_CPP)
+add_executable(precice-aste-join src/precice-aste-join.cpp)
+target_include_directories(precice-aste-join PRIVATE src thirdparty)
+target_link_libraries(precice-aste-join
+  ${Boost_LIBRARIES}
+  ${VTK_LIBRARIES}
+)
+endif()
 
 add_executable(test-precice-aste tests/testing.cpp tests/read_test.cpp tests/write_test.cpp src/mesh.cpp src/logger.cpp)
 target_include_directories(test-precice-aste PRIVATE src thirdparty)
@@ -98,13 +108,15 @@ if (VTK_VERSION VERSION_LESS "9.0")
 else ()
   # vtk_module_autoinit is needed
   vtk_module_autoinit(
-    TARGETS precice-aste-run test-precice-aste
+    TARGETS precice-aste-run test-precice-aste precice-aste-join
     MODULES ${VTK_LIBRARIES}
     )
 endif()
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-partition      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+if(NOT ASTE_USE_ASTE_JOINER_CPP)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-join           DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+endif()
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-evaluate      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 include(GNUInstallDirs)
@@ -112,7 +124,12 @@ install(TARGETS precice-aste-run DESTINATION ${CMAKE_INSTALL_BINDIR})
 if(METIS_FOUND)
 install(TARGETS metisAPI DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
+if(ASTE_USE_ASTE_JOINER_CPP)
+install(TARGETS precice-aste-join DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-partition ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-evaluate DESTINATION ${CMAKE_INSTALL_BINDIR})
+else()
 install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-partition ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-join ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-evaluate DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
 
 enable_testing()
 
