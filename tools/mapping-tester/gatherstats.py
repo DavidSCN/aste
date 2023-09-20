@@ -5,6 +5,7 @@ import csv
 import glob
 import json
 import os
+import sys
 
 
 def parseArguments(args):
@@ -28,14 +29,22 @@ def parseArguments(args):
 def statsFromTimings(dir):
     stats = {}
     assert os.path.isdir(dir)
-    assert (
-        os.system("command -v precice-events > /dev/null") == 0
-    ), 'Could not find the profiling tool "precice-events", which is part of the preCICE installation.'
+    # assert (
+    #    os.system("command -v precice-events > /dev/null") == 0
+    # ), 'Could not find the profiling tool "precice-events", which is part of the preCICE installation.'
     event_dir = os.path.join(dir, "precice-events")
     json_file = os.path.join(dir, "events.json")
     timings_file = os.path.join(dir, "timings.csv")
-    os.system("precice-events merge --output {} {}".format(json_file, event_dir))
-    os.system("precice-events analyze --output {} B {}".format(timings_file, json_file))
+    os.system(
+        "sys.executable precice-events merge --output {} {}".format(
+            json_file, event_dir
+        )
+    )
+    os.system(
+        "sys.executable precice-events analyze --output {} B {}".format(
+            timings_file, json_file
+        )
+    )
     file = timings_file
     if os.path.isfile(file):
         try:
