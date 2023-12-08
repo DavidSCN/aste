@@ -198,11 +198,12 @@ auto recoveryMerge(const std::string &prefix, std::size_t numparts, int size, co
   auto reader    = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
   auto globalIds = vtkSmartPointer<vtkIdList>::New();
   auto localIds  = vtkSmartPointer<vtkIdList>::New();
+  std::cout << "Merging " << std::to_string(numparts) << " mesh files..."<<std::endl;
 
   for (size_t i = 0; i < numparts; ++i) {
 
     // the recovery merge might take a while, let's print a nice progress bar
-    float progress = static_cast<float>(i) / numparts * 100.0;
+    float progress = static_cast<float>(i+1) / numparts * 100.0;
     // Output progress bar
     std::cout << "\r[" << std::setw(3) << static_cast<int>(progress) << "%] [";
     int barWidth = 50;
@@ -274,6 +275,7 @@ auto recoveryMerge(const std::string &prefix, std::size_t numparts, int size, co
     }
   }
 
+  std::cout << "\n" << "Adding recovery cells..." << std::endl;
   // Add Recovery cells
   auto numCells = cells.size();
   joinedCellTypes.reserve(joinedCellTypes.size() + numCells);
@@ -285,6 +287,7 @@ auto recoveryMerge(const std::string &prefix, std::size_t numparts, int size, co
     joinedCellTypes.push_back(cellTypes[i]);
   }
 
+  std::cout << "Writing final mesh... " << std::endl;
   // Assembly final mesh
   for (const auto &data : joinedDataVec) {
     joinedMesh->GetPointData()->AddArray(data);
