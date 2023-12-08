@@ -33,12 +33,15 @@ def statsFromTimings(dir):
     ), 'Could not find the profiling tool "precice-profiling", which is part of the preCICE installation.'
     event_dir = os.path.join(dir, "precice-profiling")
     json_file = os.path.join(dir, "profiling.json")
-    timings_file = os.path.join(dir, "timings.csv")
     os.system("precice-profiling merge --output {} {}".format(json_file, event_dir))
+    # first, generate the correct timings file for the computeMapping event (we want the most expensive rank for computeMapping)
+    compute_mapping_timings = os.path.join(dir, "timings-computeMapping.csv")
     os.system(
-        "precice-profiling analyze --output {} B {}".format(timings_file, json_file)
+        "precice-profiling analyze --event 'computeMapping.From' --output {} B {}".format(
+            compute_mapping_timings, json_file
+        )
     )
-    file = timings_file
+    file = compute_mapping_timings
     if os.path.isfile(file):
         try:
             timings = {}
@@ -54,6 +57,28 @@ def statsFromTimings(dir):
                     ):
                         computeMappingName = row[0]
                         stats["computeMappingTime"] = row[-1]
+                    if row[0].startswith("advance/map") and row[0].endswith(
+                        "mapData.FromA-MeshToB-Mesh"
+                    ):
+                        mapDataName = row[0]
+                        stats["mapDataTime"] = row[-1]
+        except BaseException:
+            pass
+
+    # second, generate the correct timings file for the mapData event
+    map_data_timings = os.path.join(dir, "timings-mapData.csv")
+    os.system(
+        "precice-profiling analyze --event 'mapData.From' --output {} B {}".format(
+            map_data_timings, json_file
+        )
+    )
+    file = map_data_timings
+    if os.path.isfile(file):
+        try:
+            timings = {}
+            with open(file, "r") as csvfile:
+                timings = csv.reader(csvfile)
+                for row in timings:
                     if row[0].startswith("advance/map") and row[0].endswith(
                         "mapData.FromA-MeshToB-Mesh"
                     ):
