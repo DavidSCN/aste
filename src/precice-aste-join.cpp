@@ -34,6 +34,7 @@ auto getOptions(int argc, char *argv[]) -> OptionMap
 
 void readRecoveryFile(const std::string &recoveryFile, int &size, std::vector<int> &cellTypes, std::vector<std::vector<int>> &cells)
 {
+  std::cout << "Reading recovery file .. " << std::endl;
   // Parse the file
   std::ifstream ifs(recoveryFile);
   json          recoveryData = json::parse(ifs);
@@ -199,6 +200,24 @@ auto recoveryMerge(const std::string &prefix, std::size_t numparts, int size, co
   auto localIds  = vtkSmartPointer<vtkIdList>::New();
 
   for (size_t i = 0; i < numparts; ++i) {
+
+    // the recovery merge might take a while, let's print a nice progress bar
+    float progress = static_cast<float>(i) / numparts * 100.0;
+    // Output progress bar
+    std::cout << "\r[" << std::setw(3) << static_cast<int>(progress) << "%] [";
+    int barWidth = 50;
+    int pos      = barWidth * progress / 100;
+    for (int j = 0; j < barWidth; ++j) {
+      if (j < pos)
+        std::cout << '=';
+      else if (j == pos)
+        std::cout << '>';
+      else
+        std::cout << ' ';
+    }
+    std::cout << "]";
+    std::cout.flush();
+
     globalIds->Reset();
     // Read mesh
     auto partname = prefix + "_" + std::to_string(i) + ".vtu";
