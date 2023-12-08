@@ -80,8 +80,8 @@ if(METIS_FOUND)
 endif()
 
 if(ASTE_USE_ASTE_JOINER_CPP)
-add_executable(precice-aste-join src/precice-aste-join.cpp)
-target_include_directories(precice-aste-join PRIVATE src thirdparty)
+add_executable(precice-aste-join ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-join.cpp)
+target_include_directories(precice-aste-join PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 target_link_libraries(precice-aste-join
   ${Boost_LIBRARIES}
   ${VTK_LIBRARIES}
