@@ -87,10 +87,17 @@ if (VTK_VERSION VERSION_LESS "8.90.0")
   include(${VTK_USE_FILE})
 else ()
   # vtk_module_autoinit is needed
-  vtk_module_autoinit(
-    TARGETS precice-aste-run test-precice-aste precice-aste-join
-    MODULES ${VTK_LIBRARIES}
-    )
+if(ASTE_USE_ASTE_JOINER_CPP)
+    vtk_module_autoinit(
+      TARGETS precice-aste-run test-precice-aste precice-aste-join
+      MODULES ${VTK_LIBRARIES}
+      )
+    else()
+    vtk_module_autoinit(
+      TARGETS precice-aste-run test-precice-aste
+      MODULES ${VTK_LIBRARIES}
+      )
+endif()
 endif()
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-partition      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
