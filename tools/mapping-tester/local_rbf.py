@@ -31,7 +31,10 @@ def parseArguments(argv):
             "gaussian",
             "compact-tps-c2",
             "compact-polynomial-c0",
+            "compact-polynomial-c2",
+            "compact-polynomial-c4",
             "compact-polynomial-c6",
+            "compact-polynomial-c8",
         ]
     )
 
@@ -134,16 +137,15 @@ def getConfigurator(type):
         shape = math.sqrt(-math.log(GAUSSIAN_DECAY)) / (float(h) * int(n))
         return f'shape-parameter="{shape}"'
 
-    def compact_tps_c2(h, n):
+    def default(h, n):
         return f'support-radius="{h*n}"'
 
     # This dictionary maps a type to a configuration function defined above
     res = {
         "gaussian": gauss,
-        "compact-tps-c2": compact_tps_c2,
     }.get(type)
     if res is None:
-        raise NotImplementedError(type)
+        res = default
     return res
 
 
