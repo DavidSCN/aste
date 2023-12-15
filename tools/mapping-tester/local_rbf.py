@@ -1,4 +1,4 @@
-#! python3
+#! /usr/bin/env python3
 
 import argparse
 import itertools
@@ -37,19 +37,70 @@ def parseArguments(argv):
 
     # Setup defaults
     default_polynomials = "on,separate"
-    default_types = "gaussian"
+    default_kind = "rbf-global-iterative"
+    default_rbf = "gaussian"
 
     # Parse arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-A", "--a-meshes", dest="a", type=str, required=True)
-    parser.add_argument("-B", "--b-meshes", dest="b", type=str, required=True)
-    parser.add_argument("-p", "--polynomials", default=default_polynomials, type=str)
-    parser.add_argument("-t", "--types", default=default_types, type=str)
-    parser.add_argument("-n", "--coverage", default="3,5,10,15", type=str)
     parser.add_argument(
-        "-o", "--output", default=sys.stdout, type=argparse.FileType("w")
+        "-A",
+        "--a-meshes",
+        dest="a",
+        type=str,
+        required=True,
+        help="Comma separated list of input meshes.",
     )
-    parser.add_argument("-r", "--solver-rtol", default=1e-9, type=float)
+    parser.add_argument(
+        "-B",
+        "--b-meshes",
+        dest="b",
+        type=str,
+        required=True,
+        help="Comma separated list of output meshes.",
+    )
+    parser.add_argument(
+        "-p",
+        "--polynomials",
+        default=default_polynomials,
+        type=str,
+        help="Comma seperated list of polynomial configurations (on/separate/off)",
+    )
+    parser.add_argument(
+        "-k",
+        "--kind",
+        default=default_kind,
+        type=str,
+        help="Kind of the kernel method, e.g., rbf-global-iterative.",
+    )
+    parser.add_argument(
+        "-f",
+        "--rbf",
+        dest="rbf",
+        default=default_rbf,
+        type=str,
+        help="Comma seperated list of (local) basis-functions.",
+    )
+    parser.add_argument(
+        "-n",
+        "--coverage",
+        default="3,5,10,15",
+        type=str,
+        help="Comma seperated list of number of vertices to cover in radial direction.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        default=sys.stdout,
+        type=argparse.FileType("w"),
+        help="The resulting json configuration file.",
+    )
+    parser.add_argument(
+        "-r",
+        "--solver-rtol",
+        default=1e-9,
+        type=float,
+        help="rtol of the iterative solver.",
+    )
 
     args = parser.parse_args(argv[1:])
 
@@ -59,7 +110,7 @@ def parseArguments(argv):
     args.polynomials = [
         sanitize(e, valid_polynomials) for e in args.polynomials.split(",")
     ]
-    args.types = [sanitize(e, valid_types) for e in args.types.split(",")]
+    args.rbf = [sanitize(e, valid_types) for e in args.rbf.split(",")]
     args.coverage = [int(e.strip()) for e in args.coverage.split(",")]
 
     return args
@@ -104,15 +155,17 @@ def main(argv):
     # of mesh a.
     for a in args.a:
         cases = {}
-        for polynomial, coverage, type in itertools.product(
-            args.polynomials, args.coverage, args.types
+        for polynomial, coverage, rbf in itertools.product(
+            args.polynomials, args.coverage, args.rbf
         ):
-            name = f"{type}-n{coverage}-{polynomial}"
+            name = f"{args.kind}-{rbf}-n{coverage}-{polynomial}"
             assert name not in cases
-            config = getConfigurator(type)(a, coverage)
+            config = getConfigurator(rbf)(a, coverage)
             cases[name] = {
-                "kind": f"rbf-{type}",
-                "options": f'{config} polynomial="{polynomial}" solver-rtol="{args.solver_rtol}"',
+                "kind": f"{args.kind}",
+                "options": f'polynomial="{polynomial}" solver-rtol="{args.solver_rtol}"',
+                "basis-function": f"{rbf}",
+                "basis-function-options": f"{config}",
             }
         section = {
             "mapping": {"constraints": ["consistent"], "cases": cases},
