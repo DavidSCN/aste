@@ -92,8 +92,9 @@ def statsFromTimings(dir):
     # second, generate the correct timings file for the mapData event
     map_data_timings = os.path.join(dir, "timings-mapData.csv")
     matching_event = find_exact_event_name(
-        json_file, r'advance[^"]*mapData\.From\.A-MeshToB-Mesh'
+        json_file, r'advance[^"]*mapData\.FromA-MeshToB-Mesh'
     )
+
     os.system(
         "precice-profiling analyze --event {} --output {} B {}".format(
             matching_event, map_data_timings, json_file
