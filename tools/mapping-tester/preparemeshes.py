@@ -27,10 +27,14 @@ def parseArguments(args):
         "-f", "--force", action="store_true", help="Remove existing meshes."
     )
 
+    parser.add_argument(
+        "--gradient", action="store_true", help="Include computation of gradient data."
+    )
+
     return parser.parse_args(args)
 
 
-def prepareMainMesh(meshdir, name, file, function, force=False):
+def prepareMainMesh(meshdir, name, file, function, force=False, gradient=False):
     mainDir = os.path.join(meshdir, name, "1")
     mainMesh = os.path.join(mainDir, name + ".vtu")
     print("Preparing Mesh {} in {}".format(name, mainDir))
@@ -47,21 +51,25 @@ def prepareMainMesh(meshdir, name, file, function, force=False):
     os.makedirs(mainDir, exist_ok=True)
     data_name = "{}".format(function)
     [pathName, tmpfilename] = os.path.split(os.path.normpath(mainMesh))
-    subprocess.run(
-        [
-            "precice-aste-evaluate",
-            "--mesh",
-            os.path.expandvars(file),
-            "--function",
-            function,
-            "--data",
-            data_name,
-            "--directory",
-            pathName,
-            "-o",
-            tmpfilename,
-        ]
-    )
+
+    subprocess_command = [
+        "precice-aste-evaluate",
+        "--mesh",
+        os.path.expandvars(file),
+        "--function",
+        function,
+        "--data",
+        data_name,
+        "--directory",
+        pathName,
+        "-o",
+        tmpfilename,
+    ]
+
+    if gradient:
+        subprocess_command.append("--gradient")
+
+    subprocess.run(subprocess_command)
 
 
 def preparePartMesh(meshdir, name, p, force=False):
@@ -125,7 +133,7 @@ def main(argv):
 
         if not os.path.isfile(os.path.expandvars(file)):
             raise Exception(f'\033[91m Unable to open file called "{file}".\033[0m')
-        prepareMainMesh(meshdir, name, file, function, args.force)
+        prepareMainMesh(meshdir, name, file, function, args.force, args.gradient)
 
         for p in partitions:
             preparePartMesh(meshdir, name, p, args.force)
