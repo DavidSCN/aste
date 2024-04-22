@@ -85,7 +85,8 @@ def statsFromTimings(dir):
                         "computeMapping.FromA-MeshToB-Mesh"
                     ):
                         computeMappingName = row[0]
-                        stats["computeMappingTime"] = row[-1]
+                        # For parallel runs, the primary rank is not included in the comparison and we need to compare explicitly
+                        stats["computeMappingTime"] = max(row[5], row[-1])
         except BaseException:
             pass
 
@@ -111,7 +112,7 @@ def statsFromTimings(dir):
                         "mapData.FromA-MeshToB-Mesh"
                     ):
                         mapDataName = row[0]
-                        stats["mapDataTime"] = row[-1]
+                        stats["mapDataTime"] = max(row[5], row[-1])
         except BaseException:
             pass
     return stats
