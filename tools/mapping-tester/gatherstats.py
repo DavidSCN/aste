@@ -5,7 +5,7 @@ import csv
 import glob
 import json
 import os
-import re
+import subprocess
 
 
 def parseArguments(args):
@@ -26,19 +26,29 @@ def parseArguments(args):
     return parser.parse_args(args)
 
 
-def get_matching_event_name(file_path, pattern):
-    with open(file_path, "r") as file:
-        data = json.load(file)
-        event_names = [event["name"] for event in data["events"]]
-    regex = re.compile(pattern)
-    matched_events = [name for name in event_names if regex.search(name)]
-    if len(matched_events) > 1:
-        raise ValueError(
-            "More than one event name matched the pattern, which is not allowed."
+def find_exact_event_name(file_path, pattern):
+    # Create the grep command as a string
+    command = f"grep -Po '.{{0,50}}{pattern}.{{0,50}}' {file_path}"
+
+    # Run the command using subprocess
+    try:
+        result = subprocess.run(
+            command, shell=True, text=True, capture_output=True, check=True
         )
-    elif not matched_events:
-        raise ValueError("No event name matched the pattern.")
-    return matched_events[0]
+        # Extract the matched line
+        matched_line = result.stdout.strip()
+        # Apply further regex to refine the result to exactly what we need
+        exact_match = subprocess.run(
+            ["grep", "-oP", pattern],
+            input=matched_line,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        return exact_match.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        print("Error:", e)
+        return None
 
 
 def statsFromTimings(dir):
@@ -52,8 +62,8 @@ def statsFromTimings(dir):
     os.system("precice-profiling merge --output {} {}".format(json_file, event_dir))
     # first, generate the correct timings file for the computeMapping event (we want the most expensive rank for computeMapping)
     compute_mapping_timings = os.path.join(dir, "timings-computeMapping.csv")
-    matching_event = get_matching_event_name(
-        json_file, r"^initialize.*computeMapping.From.A-MeshToB-Mesh$"
+    matching_event = find_exact_event_name(
+        json_file, r'initialize\/map\.[^"]*computeMapping\.FromA-MeshToB-Mesh'
     )
     os.system(
         "precice-profiling analyze --event {} --output {} B {}".format(
@@ -81,8 +91,8 @@ def statsFromTimings(dir):
 
     # second, generate the correct timings file for the mapData event
     map_data_timings = os.path.join(dir, "timings-mapData.csv")
-    matching_event = get_matching_event_name(
-        json_file, r"^advance.*mapData.From.A-MeshToB-Mesh$"
+    matching_event = find_exact_event_name(
+        json_file, r'advance[^"]*mapData\.From\.A-MeshToB-Mesh'
     )
     os.system(
         "precice-profiling analyze --event {} --output {} B {}".format(
