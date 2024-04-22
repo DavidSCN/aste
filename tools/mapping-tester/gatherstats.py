@@ -5,6 +5,7 @@ import csv
 import glob
 import json
 import os
+import re
 
 
 def parseArguments(args):
@@ -25,6 +26,21 @@ def parseArguments(args):
     return parser.parse_args(args)
 
 
+def get_matching_event_name(file_path, pattern):
+    with open(file_path, "r") as file:
+        data = json.load(file)
+        event_names = [event["name"] for event in data["events"]]
+    regex = re.compile(pattern)
+    matched_events = [name for name in event_names if regex.search(name)]
+    if len(matched_events) > 1:
+        raise ValueError(
+            "More than one event name matched the pattern, which is not allowed."
+        )
+    elif not matched_events:
+        raise ValueError("No event name matched the pattern.")
+    return matched_events[0]
+
+
 def statsFromTimings(dir):
     stats = {}
     assert os.path.isdir(dir)
@@ -36,9 +52,12 @@ def statsFromTimings(dir):
     os.system("precice-profiling merge --output {} {}".format(json_file, event_dir))
     # first, generate the correct timings file for the computeMapping event (we want the most expensive rank for computeMapping)
     compute_mapping_timings = os.path.join(dir, "timings-computeMapping.csv")
+    matching_event = get_matching_event_name(
+        json_file, r"^initialize.*computeMapping.From.A-MeshToB-Mesh$"
+    )
     os.system(
-        "precice-profiling analyze --event 'computeMapping.From' --output {} B {}".format(
-            compute_mapping_timings, json_file
+        "precice-profiling analyze --event {} --output {} B {}".format(
+            matching_event, compute_mapping_timings, json_file
         )
     )
     file = compute_mapping_timings
@@ -57,19 +76,17 @@ def statsFromTimings(dir):
                     ):
                         computeMappingName = row[0]
                         stats["computeMappingTime"] = row[-1]
-                    if row[0].startswith("advance/map") and row[0].endswith(
-                        "mapData.FromA-MeshToB-Mesh"
-                    ):
-                        mapDataName = row[0]
-                        stats["mapDataTime"] = row[-1]
         except BaseException:
             pass
 
     # second, generate the correct timings file for the mapData event
     map_data_timings = os.path.join(dir, "timings-mapData.csv")
+    matching_event = get_matching_event_name(
+        json_file, r"^advance.*mapData.From.A-MeshToB-Mesh$"
+    )
     os.system(
-        "precice-profiling analyze --event 'advance/.*mapData.From' --output {} B {}".format(
-            map_data_timings, json_file
+        "precice-profiling analyze --event {} --output {} B {}".format(
+            matching_event, map_data_timings, json_file
         )
     )
     file = map_data_timings
