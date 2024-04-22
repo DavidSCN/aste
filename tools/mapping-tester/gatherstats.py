@@ -86,7 +86,7 @@ def statsFromTimings(dir):
                     ):
                         computeMappingName = row[0]
                         # For parallel runs, the primary rank is not included in the comparison and we need to compare explicitly
-                        stats["computeMappingTime"] = max(int(row[5]), int(row[-1]))
+                        stats["computeMappingTime"] = max(float(row[5]), float(row[-1]))
         except BaseException:
             pass
 
@@ -112,7 +112,7 @@ def statsFromTimings(dir):
                         "mapData.FromA-MeshToB-Mesh"
                     ):
                         mapDataName = row[0]
-                        stats["mapDataTime"] = max(int(row[5]), int(row[-1]))
+                        stats["mapDataTime"] = max(float(row[5]), float(row[-1]))
         except BaseException:
             pass
     return stats
