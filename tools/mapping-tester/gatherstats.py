@@ -87,6 +87,30 @@ def statsFromTimings(dir):
                         computeMappingName = row[0]
                         # For parallel runs, the primary rank is not included in the comparison and we need to compare explicitly
                         stats["computeMappingTime"] = max(float(row[5]), float(row[-1]))
+                    if row[0].startswith("initialize/map") and row[0].endswith(
+                        "computeMapping.queryVertices"
+                    ):
+                        # note the indices, we collect the sum for these events
+                        stats["PUMqueryVerticesTime"] = max(
+                            float(row[1]), float(row[-5])
+                        )
+                    if row[0].startswith("initialize/map") and row[0].endswith(
+                        "computeMapping.rbfSolver"
+                    ):
+                        # note the indices, we collect the sum for these events
+                        stats["PUMrbfSolverTime"] = max(float(row[1]), float(row[-5]))
+                    if row[0].startswith("initialize/map") and row[0].endswith(
+                        "computeMapping.createClustering.FromA-MeshToB-Mesh"
+                    ):
+                        stats["PUMcreateClusteringTime"] = max(
+                            float(row[5]), float(row[-1])
+                        )
+                    if row[0].startswith("initialize/map") and row[0].endswith(
+                        "computeMapping.computeWeights"
+                    ):
+                        stats["PUMcomputeWeightsTime"] = max(
+                            float(row[5]), float(row[-1])
+                        )
         except BaseException:
             pass
 
