@@ -63,7 +63,7 @@ def statsFromTimings(dir):
     # first, generate the correct timings file for the computeMapping event (we want the most expensive rank for computeMapping)
     compute_mapping_timings = os.path.join(dir, "timings-computeMapping.csv")
     matching_event = find_exact_event_name(
-        json_file, r'initialize\/map\.[^"]*computeMapping\.FromA-MeshToB-Mesh'
+        json_file, r'initialize\\?/map\.[^"]*computeMapping\.FromA-MeshToB-Mesh'
     )
     os.system(
         "precice-profiling analyze --event {} --output {} B {}".format(
