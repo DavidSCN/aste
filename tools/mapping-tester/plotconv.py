@@ -49,9 +49,16 @@ style_markers = ["o", "D", "s"]
 styles = [(c, m) for m in style_markers for c in style_colours]
 
 
-def plotConv(ax, df, yname):
-    xmin = df["mesh A"].min()
-    xmax = df["mesh A"].max()
+def determineXAxis(df):
+    if df["mesh A"].nunique() == 1 and df["ranks B"].nunique() > 1:
+        return "ranks B", "ranks of participant B", False
+    else:
+        return "mesh A", "edge length(h) of mesh A", True
+
+
+def plotConv(ax, df, yname, xaxis):
+    xmin = df[xaxis].min()
+    xmax = df[xaxis].max()
     ymin = df[yname].min()
     ymax = df[yname].max()
 
@@ -59,7 +66,7 @@ def plotConv(ax, df, yname):
     print(ymin, ymax)
 
 
-def plotError(df, prefix):
+def plotError(df, prefix, xaxis, xlabel, invert_xaxis):
     yname = "relative-l2"
     fig, ax = plt.subplots(sharex=True, sharey=True)
     series = df.groupby("mapping")
@@ -72,23 +79,24 @@ def plotError(df, prefix):
         group.plot(
             ax=ax,
             loglog=True,
-            x="mesh A",
+            x=xaxis,
             y=yname,
             label=name,
             marker=marker,
             color=color,
         )
-    ax.set_xlabel("edge length(h) of mesh A")
+    ax.set_xlabel(xlabel)
     ax.set_ylabel("relative-l2 error mapping to mesh B")
 
     plotConv(ax, df, yname)
 
-    plt.gca().invert_xaxis()
+    if invert_xaxis:
+        plt.gca().invert_xaxis()
     plt.grid()
     plt.savefig(prefix + "-error.pdf")
 
 
-def plotMemory(df, prefix):
+def plotMemory(df, prefix, xaxis, xlabel, invert_xaxis):
     yname = "peakMemB"
     fig, ax = plt.subplots(sharex=True, sharey=True)
     series = df.groupby("mapping")
@@ -101,23 +109,24 @@ def plotMemory(df, prefix):
         group.plot(
             ax=ax,
             loglog=True,
-            x="mesh A",
+            x=xaxis,
             y=yname,
             label=name,
             marker=marker,
             color=color,
         )
-    ax.set_xlabel("edge length(h) of mesh A")
+    ax.set_xlabel(xlabel)
     ax.set_ylabel("peak memory of participant B [Kbytes]")
 
     # plotConv(ax, df, yname)
 
-    plt.gca().invert_xaxis()
+    if invert_xaxis:
+        plt.gca().invert_xaxis()
     plt.grid()
     plt.savefig(prefix + "-peakMemB.pdf")
 
 
-def plotComputeMappingTime(df, prefix):
+def plotComputeMappingTime(df, prefix, xaxis, xlabel, invert_xaxis):
     yname = "computeMappingTime"
     fig, ax = plt.subplots(sharex=True, sharey=True)
     series = df.groupby("mapping")
@@ -130,24 +139,24 @@ def plotComputeMappingTime(df, prefix):
         group.plot(
             ax=ax,
             loglog=True,
-            x="mesh A",
+            x=xaxis,
             y=yname,
             label=name,
             marker=marker,
             color=color,
         )
 
-    ax.set_xlabel("edge length(h) of mesh A")
+    ax.set_xlabel(xlabel)
     ax.set_ylabel("time to compute mapping [us]")
 
     # plotConv(ax, df, yname)
-
-    plt.gca().invert_xaxis()
+    if invert_xaxis:
+        plt.gca().invert_xaxis()
     plt.grid()
     plt.savefig(prefix + "-computet.pdf")
 
 
-def plotMapDataTime(df, prefix):
+def plotMapDataTime(df, prefix, xaxis, xlabel, invert_xaxis):
     yname = "mapDataTime"
     fig, ax = plt.subplots(sharex=True, sharey=True)
     series = df.groupby("mapping")
@@ -160,19 +169,19 @@ def plotMapDataTime(df, prefix):
         group.plot(
             ax=ax,
             loglog=True,
-            x="mesh A",
+            x=xaxis,
             y=yname,
             label=name,
             marker=marker,
             color=color,
         )
 
-    ax.set_xlabel("edge length(h) of mesh A")
+    ax.set_xlabel(xlabel)
     ax.set_ylabel("time to map Data [us]")
 
     # plotConv(ax, df, yname)
-
-    plt.gca().invert_xaxis()
+    if invert_xaxis:
+        plt.gca().invert_xaxis()
     plt.grid()
     plt.savefig(prefix + "-mapt.pdf")
 
@@ -188,12 +197,15 @@ def main(argv):
     toMeshes = df["mesh B"].unique()
     assert (
         len(toMeshes) == 1
-    ), f"There are {len(toMeshes)} to-meshes but only 1 is allowed. Fix your dataset!"
-    df.sort_values("mesh A", inplace=True)
-    plotError(df, args.prefix)
-    plotMemory(df, args.prefix)
-    plotMapDataTime(df, args.prefix)
-    plotComputeMappingTime(df, args.prefix)
+    ), f"There are {len(toMeshes)} to-meshes but only 1 is allowed."
+
+    xaxis, xlabel, invert_xaxis = determineXAxis(df)
+
+    df.sort_values(xaxis, inplace=True)
+    plotError(df, args.prefix, xaxis, xlabel, invert_xaxis)
+    plotMemory(df, args.prefix, xaxis, xlabel, invert_xaxis)
+    plotMapDataTime(df, args.prefix, xaxis, xlabel, invert_xaxis)
+    plotComputeMappingTime(df, args.prefix, xaxis, xlabel, invert_xaxis)
     return 0
 
 
