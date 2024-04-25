@@ -62,8 +62,20 @@ def plotConv(ax, df, yname, xaxis):
     ymin = df[yname].min()
     ymax = df[yname].max()
 
-    print(xmin, xmax)
-    print(ymin, ymax)
+    if xmin != xmax:
+        # 1st order line
+        fox = [xmin, xmax]
+        foy1 = ymax
+        foy2 = foy1 * (fox[1] / fox[0])
+        foy = [foy1, foy2]
+        ax.axline(
+            (fox[0], foy[0]),
+            (fox[1], foy[1]),
+            color="lightgray",
+            linewidth=1.0,
+            zorder=-1,
+        )
+        ax.annotate("1st order", xy=(lavg(fox), lavg(foy)), color="gray", zorder=-1)
 
 
 def plotError(df, prefix, xaxis, xlabel, invert_xaxis):
