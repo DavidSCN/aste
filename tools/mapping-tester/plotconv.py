@@ -88,7 +88,7 @@ def plotError(df, prefix, xaxis, xlabel, invert_xaxis):
     ax.set_xlabel(xlabel)
     ax.set_ylabel("relative-l2 error mapping to mesh B")
 
-    plotConv(ax, df, yname)
+    plotConv(ax, df, yname, xaxis)
 
     if invert_xaxis:
         plt.gca().invert_xaxis()
@@ -118,7 +118,7 @@ def plotMemory(df, prefix, xaxis, xlabel, invert_xaxis):
     ax.set_xlabel(xlabel)
     ax.set_ylabel("peak memory of participant B [Kbytes]")
 
-    # plotConv(ax, df, yname)
+    # plotConv(ax, df, yname, xaxis)
 
     if invert_xaxis:
         plt.gca().invert_xaxis()
@@ -149,7 +149,7 @@ def plotComputeMappingTime(df, prefix, xaxis, xlabel, invert_xaxis):
     ax.set_xlabel(xlabel)
     ax.set_ylabel("time to compute mapping [us]")
 
-    # plotConv(ax, df, yname)
+    # plotConv(ax, df, yname, xaxis)
     if invert_xaxis:
         plt.gca().invert_xaxis()
     plt.grid()
@@ -179,7 +179,7 @@ def plotMapDataTime(df, prefix, xaxis, xlabel, invert_xaxis):
     ax.set_xlabel(xlabel)
     ax.set_ylabel("time to map Data [us]")
 
-    # plotConv(ax, df, yname)
+    # plotConv(ax, df, yname, xaxis)
     if invert_xaxis:
         plt.gca().invert_xaxis()
     plt.grid()
