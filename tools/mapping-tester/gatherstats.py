@@ -6,6 +6,7 @@ import glob
 import json
 import os
 import subprocess
+from collections import OrderedDict
 
 
 def parseArguments(args):
@@ -168,7 +169,7 @@ def main(argv):
         for path in glob.iglob(globber, recursive=True)
     ]
     allstats = []
-    fields = []
+    fields = OrderedDict()
     for file in statFiles:
         print("Found: " + file)
         casedir = os.path.join(args.outdir, os.path.dirname(file))
@@ -189,11 +190,12 @@ def main(argv):
             stats.update(statsFromTimings(casedir))
             stats.update(memoryStats(casedir))
             allstats.append(stats)
-            if not fields:
-                fields += stats.keys()
+            for key in stats.keys():
+                if key not in fields:
+                    fields[key] = None
 
     assert fields
-    writer = csv.DictWriter(args.file, fieldnames=fields)
+    writer = csv.DictWriter(args.file, fieldnames=list(fields))
     writer.writeheader()
     writer.writerows(allstats)
     return 0
