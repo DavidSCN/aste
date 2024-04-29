@@ -131,6 +131,7 @@ set(MAPPING_TESTER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/tools/mapping-tester/plotconv.py
     ${CMAKE_CURRENT_SOURCE_DIR}/tools/mapping-tester/preparemeshes.py
     ${CMAKE_CURRENT_SOURCE_DIR}/tools/mapping-tester/generate.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/mapping-tester/aggregate-timings.py
 )
 
 foreach(file ${COPY_FILES})
