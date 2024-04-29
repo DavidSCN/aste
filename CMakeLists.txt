@@ -126,6 +126,18 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-join           DESTINATIO
 endif()
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-evaluate      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
+set(MAPPING_TESTER_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/mapping-tester/gatherstats.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/mapping-tester/plotconv.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/mapping-tester/preparemeshes.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/mapping-tester/generate.py
+)
+
+foreach(file ${COPY_FILES})
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${file}
+         DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+endforeach()
+
 include(GNUInstallDirs)
 install(TARGETS precice-aste-run DESTINATION ${CMAKE_INSTALL_BINDIR})
 if(METIS_FOUND)
@@ -133,9 +145,9 @@ install(TARGETS metisAPI DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 if(ASTE_USE_ASTE_JOINER_CPP)
 install(TARGETS precice-aste-join DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-partition ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-evaluate DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-partition ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-evaluate ${MAPPING_TESTER_FILES} DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
-install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-partition ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-join ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-evaluate DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-partition ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-join ${CMAKE_CURRENT_SOURCE_DIR}/src/precice-aste-evaluate ${MAPPING_TESTER_FILES} DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
 enable_testing()
