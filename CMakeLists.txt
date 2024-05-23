@@ -43,6 +43,11 @@ else()
     message(STATUS "Using VTK version ${VTK_VERSION} from ${VTK_DIR}")
 endif()
 
+# Check VTK version and conditionally set ASTE_USE_ASTE_JOINER_CPP
+if (VTK_FOUND AND "${VTK_VERSION}" VERSION_LESS "9.0")
+  set(ASTE_USE_ASTE_JOINER_CPP OFF CACHE BOOL "Use C++ implementation of precice-aste-join" FORCE)
+endif()
+
 find_package(METIS)
 if (METIS_FOUND)
     add_library(metisAPI SHARED src/metisAPI.cpp)
