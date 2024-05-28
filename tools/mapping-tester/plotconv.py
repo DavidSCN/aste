@@ -53,7 +53,7 @@ def determineXAxis(df):
     if df["mesh A"].nunique() == 1 and df["ranks B"].nunique() > 1:
         return "ranks B", "ranks of participant B", False
     else:
-        return "mesh A", "edge length(h) of mesh A", True
+        return "count", "vertices of mesh B", False
 
 
 def plotConv(ax, df, yname, xaxis):
@@ -230,6 +230,7 @@ def main(argv):
     plotMapDataTime(df, args.prefix, xaxis, xlabel, invert_xaxis)
     plotComputeMappingTime(df, args.prefix, xaxis, xlabel, invert_xaxis)
     return 0
+
 
 if __name__ == "__main__":
     import sys
