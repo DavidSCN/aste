@@ -1,11 +1,13 @@
 #! /usr/bin/env python3
 
 import argparse
+import itertools
 import math
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas
+import seaborn as sns
 
 
 def parseArguments(args):
@@ -169,33 +171,194 @@ def plotComputeMappingTime(df, prefix, xaxis, xlabel, invert_xaxis):
 
 
 def plotMapDataTime(df, prefix, xaxis, xlabel, invert_xaxis):
-    yname = "mapDataTime"
+    ynames = ["mapDataTime", "evaluateCacheTime", "updateCacheTime"]
+    markers = ["o", "s", "D"]  # Define different markers for each yname
+    linestyles = ["-", "--", "-."]  # Define different line styles for each yname
+    color_palette = sns.color_palette(
+        "colorblind", len(df["mapping"].unique())
+    )  # Get the colorblind palette
+
     fig, ax = plt.subplots(sharex=True, sharey=True)
+
+    colors = {}  # To store the color for each 'mapping'
     series = df.groupby("mapping")
-    for grouped, style in zip(series, styles):
-        name, group = grouped
-        if group[yname].max() == 0:
-            print(f"Dropping {yname}-series {name} as all 0")
-            continue
-        color, marker = style
-        group.plot(
-            ax=ax,
-            loglog=True,
-            x=xaxis,
-            y=yname,
-            label=name,
-            marker=marker,
-            color=color,
+
+    for idx, (name, group) in enumerate(series):
+        if name not in colors:
+            colors[name] = color_palette[
+                idx
+            ]  # Assign a color from the seaborn colorblind palette
+
+        for yname, marker, linestyle in zip(ynames, markers, linestyles):
+            if yname not in group.columns or group[yname].max() == 0:
+                print(
+                    f"Skipping {yname} for series {name} as it does not exist or all values are 0."
+                )
+                continue
+
+            group.plot(
+                ax=ax,
+                loglog=True,
+                x=xaxis,
+                y=yname,
+                label=f"{name}",  # Use series name for label (only once in legend)
+                marker=marker,
+                linestyle=linestyle,
+                color=colors[name],  # Ensure consistent color for the same 'mapping'
+                legend=False,  # Turn off automatic legend handling
+            )
+
+    # Create the first legend for the series name and color mapping
+    handles, labels = ax.get_legend_handles_labels()
+    unique_labels = dict(zip(labels, handles))  # Remove duplicates
+    legend1 = ax.legend(
+        unique_labels.values(),
+        unique_labels.keys(),
+        title="Series",
+        loc="upper left",
+        bbox_to_anchor=(0, 1),
+        borderaxespad=0.0,
+    )
+
+    # Create the second legend for the time types with markers and line styles
+    marker_lines = [
+        plt.Line2D(
+            [0],
+            [0],
+            color="black",
+            marker=markers[i],
+            linestyle=linestyles[i],
+            label=ynames[i],
         )
+        for i in range(len(ynames))
+    ]
+    legend2 = ax.legend(
+        handles=marker_lines,
+        title="Event",
+        loc="upper left",
+        bbox_to_anchor=(0.3, 1),
+        borderaxespad=0.0,
+    )
+
+    # Add the first legend back
+    ax.add_artist(legend1)
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel("time to map Data [us]")
 
-    # plotConv(ax, df, yname, xaxis)
     if invert_xaxis:
         plt.gca().invert_xaxis()
+
     plt.grid()
     plt.savefig(prefix + "-mapt.pdf")
+
+
+def plotSummedTimes(df, prefix, xaxis, xlabel, invert_xaxis):
+    # Events to sum
+    compute_time = "computeMappingTime"
+    map_data_time = "mapDataTime"
+    evaluate_cache_time = "evaluateCacheTime"
+    update_cache_time = "updateCacheTime"
+
+    # Define markers and linestyles
+    markers = ["o", "s"]  # Different markers for different sums
+    linestyles = ["-", "--"]  # Different line styles for different sums
+
+    # Prepare the color palette
+    color_palette = sns.color_palette("colorblind", len(df["mapping"].unique()))
+
+    fig, ax = plt.subplots(sharex=True, sharey=True)
+
+    colors = {}  # To store the color for each 'mapping'
+    series = df.groupby("mapping")
+
+    for idx, (name, group) in enumerate(series):
+        if name not in colors:
+            colors[name] = color_palette[
+                idx
+            ]  # Assign a color from the seaborn colorblind palette
+
+        # Compute the sum of computeMappingTime + mapDataTime
+        if compute_time in group.columns and map_data_time in group.columns:
+            group["sum_compute_mapData"] = group[compute_time] + group[map_data_time]
+            group.plot(
+                ax=ax,
+                loglog=True,
+                x=xaxis,
+                y="sum_compute_mapData",
+                label=f"{name}",  # Use series name for label (only once in legend)
+                marker=markers[0],
+                linestyle=linestyles[0],
+                color=colors[name],
+                legend=False,
+            )
+
+        # Compute the sum of computeMappingTime + evaluateCacheTime + updateCacheTime
+        if (
+            compute_time in group.columns
+            and evaluate_cache_time in group.columns
+            and update_cache_time in group.columns
+        ):
+            group["sum_compute_cache"] = (
+                group[compute_time]
+                + group[evaluate_cache_time]
+                + group[update_cache_time]
+            )
+            group.plot(
+                ax=ax,
+                loglog=True,
+                x=xaxis,
+                y="sum_compute_cache",
+                label=f"{name}",  # Use series name for label (only once in legend)
+                marker=markers[1],
+                linestyle=linestyles[1],
+                color=colors[name],
+                legend=False,
+            )
+
+    # Create the first legend for the series name and color mapping
+    handles, labels = ax.get_legend_handles_labels()
+    unique_labels = dict(zip(labels, handles))  # Remove duplicates
+    legend1 = ax.legend(
+        unique_labels.values(),
+        unique_labels.keys(),
+        title="Series",
+        loc="upper left",
+        bbox_to_anchor=(0, 1),
+        borderaxespad=0.0,
+    )
+
+    # Create the second legend for the sum types with markers and line styles
+    sum_lines = [
+        plt.Line2D(
+            [0],
+            [0],
+            color="black",
+            marker=markers[i],
+            linestyle=linestyles[i],
+            label=f"{'Compute + MapData' if i == 0 else 'Compute + Cache'}",
+        )
+        for i in range(len(markers))
+    ]
+    legend2 = ax.legend(
+        handles=sum_lines,
+        title="Sum Type",
+        loc="upper left",
+        bbox_to_anchor=(0.25, 1),
+        borderaxespad=0.0,
+    )
+
+    # Add the first legend back
+    ax.add_artist(legend1)
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("Summed Time [us]")
+
+    if invert_xaxis:
+        plt.gca().invert_xaxis()
+
+    plt.grid()
+    plt.savefig(prefix + "-summed-times.pdf")
 
 
 def main(argv):
@@ -218,6 +381,7 @@ def main(argv):
     plotMemory(df, args.prefix, xaxis, xlabel, invert_xaxis)
     plotMapDataTime(df, args.prefix, xaxis, xlabel, invert_xaxis)
     plotComputeMappingTime(df, args.prefix, xaxis, xlabel, invert_xaxis)
+    plotSummedTimes(df, args.prefix, xaxis, xlabel, invert_xaxis)
     return 0
 
 

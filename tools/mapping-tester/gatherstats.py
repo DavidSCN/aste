@@ -5,6 +5,7 @@ import csv
 import glob
 import json
 import os
+import shlex
 import subprocess
 from collections import OrderedDict
 
@@ -64,11 +65,11 @@ def statsFromTimings(dir):
     # first, generate the correct timings file for the computeMapping event (we want the most expensive rank for computeMapping)
     compute_mapping_timings = os.path.join(dir, "timings-computeMapping.csv")
     matching_event = find_exact_event_name(
-        json_file, r'initialize\\?/map\.[^"]*computeMapping\.FromA-MeshToB-Mesh'
+        json_file, r'initialize/?map\.[^"]*computeMapping\.FromA-MeshTo[^"]*'
     )
     os.system(
         "precice-profiling analyze --event {} --output {} B {}".format(
-            matching_event, compute_mapping_timings, json_file
+            shlex.quote(matching_event), compute_mapping_timings, json_file
         )
     )
     file = compute_mapping_timings
@@ -82,64 +83,94 @@ def statsFromTimings(dir):
                         stats["globalTime"] = row[-1]
                     if row[0] == "initialize":
                         stats["initializeTime"] = row[-1]
-                    if row[0].startswith("initialize/map") and row[0].endswith(
-                        "computeMapping.FromA-MeshToB-Mesh"
+                    if (
+                        row[0].startswith("initialize/map")
+                        and ("computeMapping.FromA-MeshTo") in row[0]
+                        and not row[0].endswith(".sync")
                     ):
                         computeMappingName = row[0]
                         # For parallel runs, the primary rank is not included in the comparison and we need to compare explicitly
                         stats["computeMappingTime"] = max(float(row[5]), float(row[-1]))
-                    if row[0].startswith("initialize/map") and row[0].endswith(
-                        "computeMapping.queryVertices"
+                    if (
+                        row[0].startswith("initialize/map")
+                        and row[0].endswith("computeMapping.queryVertices")
+                        and not row[0].endswith(".sync")
                     ):
                         # note the indices, we collect the sum for these events
                         stats["PUMqueryVerticesTime"] = max(
                             float(row[1]), float(row[-5])
                         )
-                    if row[0].startswith("initialize/map") and row[0].endswith(
-                        "computeMapping.rbfSolver"
+                    if (
+                        row[0].startswith("initialize/map")
+                        and row[0].endswith("computeMapping.rbfSolver")
+                        and not row[0].endswith(".sync")
                     ):
                         # note the indices, we collect the sum for these events
                         stats["PUMrbfSolverTime"] = max(float(row[1]), float(row[-5]))
-                    if row[0].startswith("initialize/map") and row[0].endswith(
-                        "computeMapping.createClustering.FromA-MeshToB-Mesh"
+                    if (
+                        row[0].startswith("initialize/map")
+                        and ("computeMapping.createClustering.FromA-MeshTo") in row[0]
+                        and not row[0].endswith(".sync")
                     ):
                         stats["PUMcreateClusteringTime"] = max(
                             float(row[5]), float(row[-1])
                         )
-                    if row[0].startswith("initialize/map") and row[0].endswith(
-                        "computeMapping.computeWeights"
+                    if (
+                        row[0].startswith("initialize/map")
+                        and row[0].endswith("computeMapping.computeWeights")
+                        and not row[0].endswith(".sync")
                     ):
                         stats["PUMcomputeWeightsTime"] = max(
                             float(row[5]), float(row[-1])
                         )
+                    if (
+                        row[0].startswith("advance/map")
+                        and ("mapData.FromA-MeshTo") in row[0]
+                        and not row[0].endswith(".sync")
+                    ):
+                        stats["mapDataTime"] = max(float(row[5]), float(row[-1]))
+                    if (
+                        row[0].startswith("map")
+                        and ("updateCache") in row[0]
+                        and not row[0].endswith(".sync")
+                    ):
+                        stats["updateCacheTime"] = max(float(row[5]), float(row[-1]))
+                    if (
+                        row[0].startswith("map")
+                        and ("evaluateCache") in row[0]
+                        and not row[0].endswith(".sync")
+                    ):
+                        stats["evaluateCacheTime"] = max(float(row[1]), float(row[-5]))
         except BaseException:
             pass
+
+    # TODO Only valid for serial runs right now, since we would need to generate a separate event file for all cache events
 
     # second, generate the correct timings file for the mapData event
-    map_data_timings = os.path.join(dir, "timings-mapData.csv")
-    matching_event = find_exact_event_name(
-        json_file, r'advance[^"]*mapData\.FromA-MeshToB-Mesh'
-    )
+    # map_data_timings = os.path.join(dir, "timings-mapData.csv")
+    # matching_event = find_exact_event_name(
+    #     json_file, r'advance[^"]*mapData\.FromA-MeshToB-Mesh'
+    # )
 
-    os.system(
-        "precice-profiling analyze --event {} --output {} B {}".format(
-            matching_event, map_data_timings, json_file
-        )
-    )
-    file = map_data_timings
-    if os.path.isfile(file):
-        try:
-            timings = {}
-            with open(file, "r") as csvfile:
-                timings = csv.reader(csvfile)
-                for row in timings:
-                    if row[0].startswith("advance/map") and row[0].endswith(
-                        "mapData.FromA-MeshToB-Mesh"
-                    ):
-                        mapDataName = row[0]
-                        stats["mapDataTime"] = max(float(row[5]), float(row[-1]))
-        except BaseException:
-            pass
+    # os.system(
+    #     "precice-profiling analyze --event {} --output {} B {}".format(
+    #         matching_event, map_data_timings, json_file
+    #     )
+    # )
+    # file = map_data_timings
+    # if os.path.isfile(file):
+    #     try:
+    #         timings = {}
+    #         with open(file, "r") as csvfile:
+    #             timings = csv.reader(csvfile)
+    #             for row in timings:
+    #                 if row[0].startswith("advance/map") and row[0].endswith(
+    #                     "mapData.FromA-MeshToB-Mesh"
+    #                 ):
+    #                     mapDataName = row[0]
+    #                     stats["mapDataTime"] = max(float(row[5]), float(row[-1]))
+    #     except BaseException:
+    #         pass
     return stats
 
 
